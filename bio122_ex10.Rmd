@@ -1,0 +1,68 @@
+---
+title: "Exercise 9A"
+author: "Espinosa & Madrid"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+```{r}
+
+library(tidyverse)
+library(car)
+
+```
+
+# 1. DATA
+```{r}
+
+drink <- read.csv("C:/Users/Xyrine/Documents/School Stuff/BS BIO 4th Year/1st Semester/BIO 118/Module 1/Module 1 - Laboratory Exercise/bio118-class/exercises/bio122_ex10/data/ex10.csv")
+
+head(drink, n = 5)
+
+```
+
+# 2. ANOVA
+
+## 2a. Test for normality of distribution
+```{r}
+
+## Shapiro-Wilk normality Test
+shapiro.test(drink$p.vol[drink$drink == "Distilled Water"])$p.value # p = 0.26; normal 
+shapiro.test(drink$p.vol[drink$drink == "Gatorade"])$p.value # p = 0.017; not normal
+shapiro.test(drink$p.vol[drink$drink == "Tea or Coffee"]) # p = 0.00017; not normal
+shapiro.test(drink$p.vol[drink$drink == "NaCl Solution"]) # p = 0.84; normal
+
+
+```
+
+
+## 2b. Test for homogeneity in variances
+```{r}
+
+## homoscedasticity
+leveneTest(p.vol ~ drink, drink) # p < 0.05; assume hetero
+
+```
+
+
+## 3c. ANOVA
+```{r}
+
+#  ANOVA
+anov <- aov(p.vol ~ drink, drink)   ## p = <2e-16
+summary(anov) # p < 0.05; reject Ho
+
+#  Kruskal-Wallis test
+kw <- kruskal.test(p.vol ~ drink, drink)  ## p = 9.425e-16
+kw #  p < 0.05; reject Ho
+
+
+#  multiple pairwise-comparison between groups
+wx <- pairwise.wilcox.test(drink$p.vol, drink$drink, p.adjust.method = "BH")
+wx #  sig. diff. in all groups
+
+```
